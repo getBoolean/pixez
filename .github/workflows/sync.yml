@@ -119,6 +119,17 @@ jobs:
           branch: sync_upstream
           base: main
 
+      - name: Enable auto-merge on pull request
+        if: env.pull_request_state == 'closed' || env.pull_request_state == 'null'
+        run: |
+          pr_number=$(curl -s -H "Authorization: Bearer ${{ secrets.PAT }}" "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:sync_upstream" | jq -r '.[0].number')
+          if [ "$pr_number" != "null" ] && [ -n "$pr_number" ]; then
+            gh pr merge "$pr_number" --auto --merge --repo "${{ github.repository }}"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+        shell: bash
+
       - name: Check existing pull requests again
         id: check_pr_2
         run: |
