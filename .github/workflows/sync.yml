@@ -10,6 +10,9 @@ on:
         description: "Upstream repo URL"
         required: false
         default: "https://github.com/Notsfsssf/pixez-flutter.git"
+      release_tag:
+        description: "Upstream release tag (e.g. 3.6.0-149). Leave empty to use latest."
+        required: false
 
 env:
   pull_request_state: ""
@@ -68,8 +71,13 @@ jobs:
           git config pull.rebase false
           git pull origin sync_upstream
           git fetch upstream "refs/tags/*:refs/tags/upstream/*"
-          latest_upstream_tag=$(git for-each-ref --sort=-creatordate --format='%(refname:short)' refs/tags/upstream | head -n 1)
-          git merge --allow-unrelated-histories -X theirs "$latest_upstream_tag"
+          if [[ -n "${{ inputs.release_tag }}" ]]; then
+            target_tag="upstream/${{ inputs.release_tag }}"
+          else
+            target_tag=$(git for-each-ref --sort=-creatordate --format='%(refname:short)' refs/tags/upstream | head -n 1)
+          fi
+          echo "Merging tag: $target_tag"
+          git merge --allow-unrelated-histories -X theirs "$target_tag"
         shell: bash
       - name: Push changes
         uses: ad-m/github-push-action@master
