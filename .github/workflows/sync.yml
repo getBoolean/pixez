@@ -109,7 +109,7 @@ jobs:
           git reset --hard sync_upstream
 
       - name: Create pull request if not exists or closed
-        if: env.pull_request_state == 'closed' || env.pull_request_state == 'null'
+        if: env.pull_request_state == 'null'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.PAT }}
@@ -119,8 +119,16 @@ jobs:
           branch: sync_upstream
           base: main
 
+      - name: Check existing pull requests again
+        id: check_pr_2
+        run: |
+          pr=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner  }}:sync_upstream" | jq -r '.[0].state')
+          echo "pull_request_state=$pr" >> $GITHUB_ENV
+          echo "pull_request_state=$pr"
+        shell: bash
+
       - name: Enable auto-merge on pull request
-        if: env.pull_request_state == 'closed' || env.pull_request_state == 'null'
+        if: env.pull_request_state != 'null'
         run: |
           pr_number=$(curl -s -H "Authorization: Bearer ${{ secrets.PAT }}" "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:sync_upstream" | jq -r '.[0].number')
           if [ "$pr_number" != "null" ] && [ -n "$pr_number" ]; then
@@ -130,14 +138,6 @@ jobs:
           GH_TOKEN: ${{ secrets.PAT }}
         shell: bash
 
-      - name: Check existing pull requests again
-        id: check_pr_2
-        run: |
-          pr=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner  }}:sync_upstream" | jq -r '.[0].state')
-          echo "pull_request_state=$pr" >> $GITHUB_ENV
-          echo "pull_request_state=$pr"
-        shell: bash
-
       - name: Delete branch if pull request is not created
-        if: env.pull_request_state == 'closed' || env.pull_request_state == 'null'
+        if: env.pull_request_state == 'null'
         run: git push origin --delete sync_upstream
