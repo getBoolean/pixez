@@ -12,12 +12,23 @@ class Sharer {
     final tempDir = await getTemporaryDirectory();
     final file = File(p.join(tempDir.path, fileName));
     await file.writeAsBytes(uint8List);
+    final rect = resolveSharePositionOrigin(context);
+    await SharePlus.instance.share(
+      ShareParams(files: [XFile(file.path)], sharePositionOrigin: rect),
+    );
+  }
+
+  @visibleForTesting
+  static Rect resolveSharePositionOrigin(BuildContext context) {
     final box = context.findRenderObject() as RenderBox?;
-    Rect? rect;
-    if (box != null) {
-      rect = box.localToGlobal(Offset.zero) & box.size;
+    if (box != null && box.hasSize) {
+      return box.localToGlobal(Offset.zero) & box.size;
     }
-    SharePlus.instance.share(
-        ShareParams(files: [XFile(file.path)], sharePositionOrigin: rect));
+    final mediaQuery = MediaQuery.maybeOf(context);
+    if (mediaQuery != null && mediaQuery.size != Size.zero) {
+      final size = mediaQuery.size;
+      return Rect.fromLTWH(0, 0, size.width, size.height);
+    }
+    return Rect.zero;
   }
 }
