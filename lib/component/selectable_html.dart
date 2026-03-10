@@ -17,6 +17,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:pixez/component/html_bio_formatter.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:pixez/component/picker/utils.dart';
 import 'package:pixez/er/leader.dart';
@@ -45,7 +46,7 @@ class _SelectableHtmlState extends State<SelectableHtml> {
   Widget build(BuildContext context) {
     return Container(
       child: HtmlWidget(
-        widget.data,
+        normalizeBioHtml(widget.data),
         customStylesBuilder: (e) {
           if (e.attributes.containsKey('href')) {
             final color = Theme.of(context).colorScheme.primary;

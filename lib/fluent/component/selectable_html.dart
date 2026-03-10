@@ -18,6 +18,7 @@ import 'dart:io';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+import 'package:pixez/component/html_bio_formatter.dart';
 import 'package:pixez/er/leader.dart';
 import 'package:pixez/er/lprinter.dart';
 import 'package:pixez/supportor_plugin.dart';
@@ -44,7 +45,7 @@ class _SelectableHtmlState extends State<SelectableHtml> {
   Widget build(BuildContext context) {
     return Container(
       child: HtmlWidget(
-        widget.data,
+        normalizeBioHtml(widget.data),
         customStylesBuilder: (e) {
           if (e.attributes.containsKey('href')) {
             final color = FluentTheme.of(context).accentColor;
