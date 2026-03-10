@@ -20,17 +20,18 @@ Map<String, dynamic> mapAjaxUserDetailToAppApiShape(
       },
       'comment': body['comment']?.toString(),
       'is_followed': body['isFollowed'] == true,
+      'is_mypixiv': body['isMypixiv'] == true,
     },
     'profile': {
       'webpage': body['webpage']?.toString(),
-      'gender': body['gender']?.toString(),
+      'gender': _extractProfileName(body['gender']),
       'birth': body['age']?.toString(),
       'birth_day': body['birthDay']?.toString(),
       'birth_year': null,
       'region': body['region']?.toString(),
       'address_id': null,
       'country_code': null,
-      'job': body['job']?.toString(),
+      'job': _extractProfileName(body['job']),
       'job_id': null,
       'total_follow_users': _toInt(body['following']),
       'total_mypixiv_users': _toInt(body['mypixivCount']),
@@ -103,4 +104,19 @@ Map<String, dynamic> _normalizeWorkspace(Map<String, dynamic>? workspace) {
 int _toInt(dynamic value) {
   if (value is int) return value;
   return int.tryParse('$value') ?? 0;
+}
+
+String? _extractProfileName(dynamic value) {
+  if (value == null) return null;
+  if (value is String) return value;
+  if (value is Map) {
+    final dynamic name = value['name'];
+    if (name == null) return null;
+    final normalized = name.toString().trim();
+    if (normalized.isEmpty || normalized.toLowerCase() == 'null') return null;
+    return normalized;
+  }
+  final normalized = value.toString().trim();
+  if (normalized.isEmpty || normalized.toLowerCase() == 'null') return null;
+  return normalized;
 }

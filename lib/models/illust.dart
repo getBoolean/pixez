@@ -201,6 +201,8 @@ class User {
   String? comment;
   @JsonKey(name: 'is_followed')
   bool? isFollowed;
+  @JsonKey(name: 'is_mypixiv')
+  bool? isMypixiv;
 
   User(
       {required this.id,
@@ -208,7 +210,8 @@ class User {
       required this.account,
       required this.profileImageUrls,
       this.comment,
-      this.isFollowed});
+      this.isFollowed,
+      this.isMypixiv});
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
