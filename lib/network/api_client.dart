@@ -33,6 +33,7 @@ import 'package:pixez/models/illust_bookmark_tags_response.dart';
 import 'package:pixez/models/tags.dart';
 import 'package:pixez/models/ugoira_metadata_response.dart';
 import 'package:pixez/network/refresh_token_interceptor.dart';
+import 'package:pixez/network/user_detail_mapper.dart';
 import 'package:rhttp/rhttp.dart' as r;
 
 final ApiClient apiClient = ApiClient();
@@ -209,8 +210,40 @@ class ApiClient {
   }
 
   Future<Response> getUser(int id) async {
-    return httpClient.get("/v1/user/detail?filter=for_android",
-        queryParameters: {"user_id": id});
+    final webClient = Dio(
+      BaseOptions(
+        baseUrl: 'https://www.pixiv.net',
+        headers: {
+          'User-Agent': httpClient.options.headers['User-Agent'],
+          HttpHeaders.acceptLanguageHeader: Accept_Language,
+          HttpHeaders.refererHeader: 'https://www.pixiv.net/users/$id',
+          HttpHeaders.hostHeader: 'www.pixiv.net',
+        },
+      ),
+    );
+    final ajaxRes = await webClient.get('/ajax/user/$id', queryParameters: {
+      'full': 1,
+    });
+    final rawData = ajaxRes.data;
+    if (rawData is! Map<String, dynamic>) {
+      throw DioException(
+        requestOptions: ajaxRes.requestOptions,
+        response: ajaxRes,
+        error: 'Unexpected ajax user response type',
+      );
+    }
+    if (rawData['error'] == true || rawData['body'] is! Map<String, dynamic>) {
+      throw DioException(
+        requestOptions: ajaxRes.requestOptions,
+        response: ajaxRes,
+        error: rawData['message'] ?? 'Pixiv ajax user response error',
+      );
+    }
+    final mapped = mapAjaxUserDetailToAppApiShape(
+      (rawData['body'] as Map<String, dynamic>),
+    );
+    ajaxRes.data = mapped;
+    return ajaxRes;
   }
 
   Future<Response> postUser(int? a, String? b) async {

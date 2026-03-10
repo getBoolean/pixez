@@ -42,6 +42,15 @@ class UserDetailPage extends StatefulWidget {
 }
 
 class _UserDetailPageState extends State<UserDetailPage> {
+  String _displaySocialLabel({
+    required String? account,
+    required String? url,
+  }) {
+    if (account != null && account.isNotEmpty) return account;
+    if (url != null && url.isNotEmpty) return url;
+    return "";
+  }
+
   bool _isNovel = false;
   bool _isNewNested = false;
 
@@ -159,7 +168,10 @@ class _UserDetailPageState extends State<UserDetailPage> {
                 ]),
                 DataRow(cells: [
                   DataCell(Text(I18n.of(context).twitter_account)),
-                  DataCell(Text(profile?.twitter_account ?? ""),
+                  DataCell(
+                      Text(_displaySocialLabel(
+                          account: profile?.twitter_account,
+                          url: profile?.twitter_url)),
                       onTap: () async {
                     final url = profile?.twitter_url;
                     if (url != null) {
@@ -175,6 +187,26 @@ class _UserDetailPageState extends State<UserDetailPage> {
                       }
                     }
                   }),
+                ]),
+                DataRow(cells: [
+                  DataCell(Text('Webpage')),
+                  DataCell(
+                    Text(profile?.webpage ?? ""),
+                    onTap: () async {
+                      final url = profile?.webpage;
+                      if (url == null || url.isEmpty) return;
+                      try {
+                        if (Platform.isIOS) {
+                          await launchUrlString(url,
+                              mode: LaunchMode.externalApplication);
+                        } else {
+                          await launchUrlString(url);
+                        }
+                      } catch (e) {
+                        SharePlus.instance.share(ShareParams(text: url));
+                      }
+                    },
+                  ),
                 ]),
                 DataRow(cells: [
                   DataCell(Text(I18n.of(context).gender)),
