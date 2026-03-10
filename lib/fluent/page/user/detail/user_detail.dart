@@ -34,6 +34,15 @@ class UserDetailPage extends StatefulWidget {
 }
 
 class _UserDetailPageState extends State<UserDetailPage> {
+  String _displaySocialLabel({
+    required String? account,
+    required String? url,
+  }) {
+    if (account != null && account.isNotEmpty) return account;
+    if (url != null && url.isNotEmpty) return url;
+    return "";
+  }
+
   @override
   Widget build(BuildContext context) {
     var detail = widget.userDetail;
@@ -123,10 +132,27 @@ class _UserDetailPageState extends State<UserDetailPage> {
                   TableRow(children: [
                     Text(I18n.of(context).twitter_account),
                     HyperlinkButton(
-                        child: Text(profile.twitter_account ?? ""),
+                        child: Text(_displaySocialLabel(
+                            account: profile.twitter_account,
+                            url: profile.twitter_url)),
                         onPressed: () async {
                           final url = profile.twitter_url;
                           if (url == null) return;
+
+                          try {
+                            await launchUrl(Uri.parse(url));
+                          } catch (e) {
+                            SharePlus.instance.share(ShareParams(text: url));
+                          }
+                        }),
+                  ]),
+                  TableRow(children: [
+                    Text('Webpage'),
+                    HyperlinkButton(
+                        child: Text(profile.webpage ?? ""),
+                        onPressed: () async {
+                          final url = profile.webpage;
+                          if (url == null || url.isEmpty) return;
 
                           try {
                             await launchUrl(Uri.parse(url));
