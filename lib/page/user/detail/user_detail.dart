@@ -209,6 +209,10 @@ class _UserDetailPageState extends State<UserDetailPage> {
                   ),
                 ]),
                 DataRow(cells: [
+                  DataCell(Text('Birthday')),
+                  DataCell(Text(detail?.profile.birth_day ?? detail?.profile.birth ?? "")),
+                ]),
+                DataRow(cells: [
                   DataCell(Text(I18n.of(context).gender)),
                   DataCell(Text(detail?.profile.gender ?? "")),
                 ]),
@@ -218,12 +222,12 @@ class _UserDetailPageState extends State<UserDetailPage> {
                 ]),
                 DataRow(cells: [
                   DataCell(Text('Pawoo')),
-                  DataCell(Text(public?.pawoo != null ? 'Link' : 'none'),
+                  DataCell(Text((detail?.profile.pawoo_url?.isNotEmpty ?? false) ? 'Link' : 'none'),
                       onTap: () async {
-                    if (public?.pawoo == null || !public!.pawoo) return;
                     var url = detail?.profile.pawoo_url;
+                    if (url == null || url.isEmpty) return;
                     try {
-                      await launchUrlString(url!);
+                      await launchUrlString(url);
                     } catch (e) {}
                   }),
                 ]),

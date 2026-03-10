@@ -47,7 +47,6 @@ class _UserDetailPageState extends State<UserDetailPage> {
   Widget build(BuildContext context) {
     var detail = widget.userDetail;
     var profile = widget.userDetail.profile;
-    var public = widget.userDetail.profile_publicity;
     return SelectionArea(
       child: SingleChildScrollView(
         child: Column(
@@ -162,6 +161,13 @@ class _UserDetailPageState extends State<UserDetailPage> {
                         }),
                   ]),
                   TableRow(children: [
+                    Text('Birthday'),
+                    Text(
+                      detail.profile.birth_day ?? detail.profile.birth ?? '',
+                      textAlign: TextAlign.center,
+                    ),
+                  ]),
+                  TableRow(children: [
                     Text(I18n.of(context).gender),
                     Text(
                       detail.profile.gender ?? '',
@@ -178,11 +184,10 @@ class _UserDetailPageState extends State<UserDetailPage> {
                   TableRow(children: [
                     Text('Pawoo'),
                     HyperlinkButton(
-                        child: Text(public.pawoo ? 'Link' : 'none'),
+                        child: Text((detail.profile.pawoo_url?.isNotEmpty ?? false) ? 'Link' : 'none'),
                         onPressed: () async {
-                          if (!public.pawoo) return;
                           var url = detail.profile.pawoo_url;
-                          if (url == null) return;
+                          if (url == null || url.isEmpty) return;
                           try {
                             await launchUrl(Uri.parse(url));
                           } catch (e) {}

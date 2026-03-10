@@ -25,10 +25,10 @@ Map<String, dynamic> mapAjaxUserDetailToAppApiShape(
     'profile': {
       'webpage': body['webpage']?.toString(),
       'gender': _extractProfileName(body['gender']),
-      'birth': body['age']?.toString(),
-      'birth_day': body['birthDay']?.toString(),
+      'birth': _extractProfileName(body['age']),
+      'birth_day': _extractProfileName(body['birthDay']),
       'birth_year': null,
-      'region': body['region']?.toString(),
+      'region': _extractProfileName(body['region']),
       'address_id': null,
       'country_code': null,
       'job': _extractProfileName(body['job']),
@@ -63,7 +63,9 @@ Map<String, dynamic> mapAjaxUserDetailToAppApiShape(
 String? _extractSocialUrl(Map<String, dynamic> social, String key) {
   final node = social[key];
   if (node is Map && node['url'] != null) {
-    return node['url'].toString();
+    final url = node['url'].toString().trim();
+    if (url.isEmpty || url.toLowerCase() == 'null') return null;
+    return url;
   }
   return null;
 }

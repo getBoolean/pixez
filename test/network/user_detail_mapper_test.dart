@@ -13,6 +13,7 @@ void main() {
       'mypixivCount': 3,
       'webpage': 'https://watakaze.example',
       'gender': {'name': null, 'privacyLevel': 'public'},
+      'birthDay': {'name': '03-10', 'privacyLevel': 'public'},
       'job': {'name': 'Illustrator', 'privacyLevel': 'private'},
       'social': {
         'twitter': {'url': 'https://twitter.com/Watakaze1062'},
@@ -29,6 +30,7 @@ void main() {
     expect(profile['twitter_account'], 'Watakaze1062');
     expect(profile['webpage'], 'https://watakaze.example');
     expect(profile['gender'], isNull);
+    expect(profile['birth_day'], '03-10');
     expect(profile['job'], 'Illustrator');
     expect((mapped['workspace'] as Map<String, dynamic>)['pc'], '');
   });
@@ -50,5 +52,21 @@ void main() {
     expect(user['is_mypixiv'], isTrue);
     expect(profile['twitter_account'], 'alice_dev');
     expect(profile['twitter_url'], 'https://x.com/alice_dev');
+  });
+
+  test('ignores empty social urls', () {
+    final mapped = mapAjaxUserDetailToAppApiShape({
+      'userId': 777,
+      'name': 'NoPawoo',
+      'social': {
+        'pawoo': {'url': ''},
+      },
+      'workspace': {},
+    });
+
+    final profile = mapped['profile'] as Map<String, dynamic>;
+    final publicity = mapped['profile_publicity'] as Map<String, dynamic>;
+    expect(profile['pawoo_url'], isNull);
+    expect(publicity['pawoo'], isFalse);
   });
 }
