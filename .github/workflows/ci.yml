@@ -90,6 +90,12 @@ jobs:
       - name: Update AltStore metadata
         if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
         run: |
+          publish_dir="$RUNNER_TEMP/altstore-publish"
+          altstore_file="$publish_dir/AltStore.json"
+          rm -rf "$publish_dir"
+          mkdir -p "$publish_dir"
+          cp ".github/templates/AltStore.template.json" "$altstore_file"
+
           ipa_filename="pixez-${{ env.BRANCH_NAME }}-ios.ipa"
           ipa_path="build/ios/iphoneos/${ipa_filename}"
           version="${GITHUB_REF_NAME#v}"
@@ -101,31 +107,22 @@ jobs:
           fi
           download_url="https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/${ipa_filename}"
 
-          jq '.apps[0].versions[0].size = '"$size"'' AltStore.json > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json AltStore.json
-          jq --arg desc "$notes" '.apps[0].versions[0].localizedDescription = $desc' AltStore.json > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json AltStore.json
-          jq --arg date "$version_date" '.apps[0].versions[0].date = $date' AltStore.json > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json AltStore.json
-          jq --arg ver "$version" '.apps[0].versions[0].version = $ver' AltStore.json > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json AltStore.json
-          jq --arg min "13.0" '.apps[0].versions[0].minOSVersion = $min' AltStore.json > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json AltStore.json
-          jq --arg url "$download_url" '.apps[0].versions[0].downloadURL = $url' AltStore.json > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json AltStore.json
+          jq '.apps[0].versions[0].size = '"$size"'' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
+          jq --arg desc "$notes" '.apps[0].versions[0].localizedDescription = $desc' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
+          jq --arg date "$version_date" '.apps[0].versions[0].date = $date' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
+          jq --arg ver "$version" '.apps[0].versions[0].version = $ver' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
+          jq --arg min "13.0" '.apps[0].versions[0].minOSVersion = $min' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
+          jq --arg url "$download_url" '.apps[0].versions[0].downloadURL = $url' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
 
-      - name: Commit AltStore metadata update
+      - name: Publish AltStore metadata to gh-pages
         if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
-        run: |
-          cp AltStore.json /tmp/AltStore.json
-          git fetch origin main
-          git checkout -B main origin/main
-          cp /tmp/AltStore.json AltStore.json
-
-          git add AltStore.json
-          if git diff --cached --quiet; then
-            echo "No AltStore changes detected."
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore: update AltStore metadata for ${{ github.ref_name }}"
-          git push origin HEAD:main
+        uses: JamesIves/github-pages-deploy-action@releases/v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: ${{ runner.temp }}/altstore-publish
+          clean: true
+          single-commit: true
 
   build_android:
     name: Build Flutter for Android

@@ -6,7 +6,9 @@
   "iconURL": "https://raw.githubusercontent.com/Perol-Notsfsssf/pixez/main/ios/Runner/Assets.xcassets/AppIcon.appiconset/icon-1024%201.png",
   "website": "https://github.com/Perol-Notsfsssf/pixez",
   "tintColor": "4A90E2",
-  "featuredApps": ["com.perol.pixez"],
+  "featuredApps": [
+    "com.perol.pixez"
+  ],
   "apps": [
     {
       "name": "PixEz",
@@ -18,10 +20,10 @@
       "tintColor": "4A90E2",
       "versions": [
         {
-          "version": "1.9.79",
-          "date": "2026-03-11T00:00:00",
-          "localizedDescription": "Initial AltStore metadata for PixEz.",
-          "downloadURL": "https://github.com/Perol-Notsfsssf/pixez/releases/download/v1.9.79/pixez-v1.9.79-ios.ipa",
+          "version": "0.0.0-template",
+          "date": "1970-01-01T00:00:00",
+          "localizedDescription": "Template file for CI-generated AltStore metadata.",
+          "downloadURL": "https://github.com/BooleanExtra/pixez/releases/download/v0.0.0-template/pixez-v0.0.0-template-ios.ipa",
           "size": 0,
           "minOSVersion": "13.0"
         }
