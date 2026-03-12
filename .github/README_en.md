@@ -18,8 +18,7 @@ Can access pixiv directly from Mainland China.
 
 ## AltStore Source
 
-- URL: [Add to AltStore](altstore://source?url=https://raw.githubusercontent.com/BooleanExtra/pixez/gh-pages/AltStore.json)
-- Manual Entry: `https://raw.githubusercontent.com/BooleanExtra/pixez/gh-pages/AltStore.json`
+- URL: `https://raw.githubusercontent.com/BooleanExtra/pixez/gh-pages/AltStore.json`
 
 # Preview
 
