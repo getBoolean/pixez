@@ -1,0 +1,31 @@
+{
+  "name": "PixEz AltStore Source",
+  "identifier": "com.perol.pixez.altstore",
+  "subtitle": "A Pixiv client app for iOS.",
+  "description": "PixEz is a Flutter-based Pixiv client for iOS.",
+  "iconURL": "https://raw.githubusercontent.com/Perol-Notsfsssf/pixez/main/ios/Runner/Assets.xcassets/AppIcon.appiconset/icon-1024%201.png",
+  "website": "https://github.com/Perol-Notsfsssf/pixez",
+  "tintColor": "4A90E2",
+  "featuredApps": ["com.perol.pixez"],
+  "apps": [
+    {
+      "name": "PixEz",
+      "bundleIdentifier": "com.perol.pixez",
+      "developerName": "Notsfsssf",
+      "subtitle": "A Pixiv client app for iOS.",
+      "localizedDescription": "PixEz is a Flutter-based Pixiv client for iOS.",
+      "iconURL": "https://raw.githubusercontent.com/Perol-Notsfsssf/pixez/main/ios/Runner/Assets.xcassets/AppIcon.appiconset/icon-1024%201.png",
+      "tintColor": "4A90E2",
+      "versions": [
+        {
+          "version": "1.9.79",
+          "date": "2026-03-11T00:00:00",
+          "localizedDescription": "Initial AltStore metadata for PixEz.",
+          "downloadURL": "https://github.com/Perol-Notsfsssf/pixez/releases/download/v1.9.79/pixez-v1.9.79-ios.ipa",
+          "size": 0,
+          "minOSVersion": "13.0"
+        }
+      ]
+    }
+  ]
+}
