@@ -92,9 +92,12 @@ jobs:
         run: |
           publish_dir="$RUNNER_TEMP/altstore-publish"
           altstore_file="$publish_dir/AltStore.json"
+          icon_source="ios/Runner/Assets.xcassets/AppIcon.appiconset/icon-1024 1.png"
+          icon_name="icon.png"
           rm -rf "$publish_dir"
           mkdir -p "$publish_dir"
           cp ".github/templates/AltStore.template.json" "$altstore_file"
+          cp "$icon_source" "$publish_dir/$icon_name"
 
           ipa_filename="pixez-${{ env.BRANCH_NAME }}-ios.ipa"
           ipa_path="build/ios/iphoneos/${ipa_filename}"
@@ -106,6 +109,7 @@ jobs:
             notes="Release ${GITHUB_REF_NAME}"
           fi
           download_url="https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/${ipa_filename}"
+          icon_url="https://raw.githubusercontent.com/${{ github.repository }}/gh-pages/${icon_name}"
 
           jq '.apps[0].versions[0].size = '"$size"'' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
           jq --arg desc "$notes" '.apps[0].versions[0].localizedDescription = $desc' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
@@ -113,6 +117,7 @@ jobs:
           jq --arg ver "$version" '.apps[0].versions[0].version = $ver' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
           jq --arg min "13.0" '.apps[0].versions[0].minOSVersion = $min' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
           jq --arg url "$download_url" '.apps[0].versions[0].downloadURL = $url' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
+          jq --arg icon "$icon_url" '.iconURL = $icon | .apps[0].iconURL = $icon' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
 
       - name: Publish AltStore metadata to gh-pages
         if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
