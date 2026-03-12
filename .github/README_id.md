@@ -16,6 +16,11 @@ Dapat mengakses Pixiv secara langsung dari Tiongkok Daratan.
 
 ## AltStore Source
 
+- [Add to AltStore](https://intradeus.github.io/http-protocol-redirector?r=altstore://source?url=https://raw.githubusercontent.com/BooleanExtra/pixez/gh-pages/AltStore.json)
+- [Add to SideStore](https://intradeus.github.io/http-protocol-redirector?r=sidestore://source?url=https://raw.githubusercontent.com/BooleanExtra/pixez/gh-pages/AltStore.json)
+- [Add to Feather](https://intradeus.github.io/http-protocol-redirector?r=feather://source/https://raw.githubusercontent.com/BooleanExtra/pixez/gh-pages/AltStore.json)
+- [Add to LiveContainer](https://intradeus.github.io/http-protocol-redirector?r=livecontainer://source?url=https://raw.githubusercontent.com/BooleanExtra/pixez/gh-pages/AltStore.json)
+- [Add to TrollApps](https://intradeus.github.io/http-protocol-redirector?r=trollapps://add?url=https://raw.githubusercontent.com/BooleanExtra/pixez/gh-pages/AltStore.json)
 - URL: `https://raw.githubusercontent.com/BooleanExtra/pixez/gh-pages/AltStore.json`
 
 # Preview
