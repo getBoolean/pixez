@@ -14,6 +14,11 @@ Dapat mengakses Pixiv secara langsung dari Tiongkok Daratan.
 |iOS|[App Store](https://apps.apple.com/app/pixez/id1494435126)|[Action Ipa](https://github.com/Notsfsssf/pixez-flutter/actions/workflows/build_ios.yml)|/|
 |Windows|/|[Nightly MSIX](https://github.com/Notsfsssf/pixez-flutter/actions/workflows/build_windows.yml)|/|
 
+## AltStore Source
+
+- URL: `[Add to AltStore](altstore://source?url=https://raw.githubusercontent.com/BooleanExtra/pixez/gh-pages/AltStore.json)`
+- Manual Entry: `https://raw.githubusercontent.com/BooleanExtra/pixez/gh-pages/AltStore.json`
+
 # Preview
 
 |![Preview](../.github/preview/2.jpg) | ![Preview](../.github/preview/1.jpg) | 
