@@ -4,6 +4,8 @@
 
 Klien pihak ketiga Pixiv yang dibuat dengan Flutter.
 
+Modified to fix the app on jailbroken devices, and fixed lots of small bugs.
+
 Dapat mengakses Pixiv secara langsung dari Tiongkok Daratan.
 
 # Download
