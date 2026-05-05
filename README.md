@@ -5,7 +5,7 @@
 [English README Here](./.github/README_en.md)<br />
 [README Bahasa Indonesia klik disini](./.github/README_id.md)
 
-Fixed the app on jailbroken devices, and lots of small bugs.
+Modified to fix the app on jailbroken devices, and fixed lots of small bugs.
 
 使用 Flutter 编写的 pixiv 第三方客户端。
 
