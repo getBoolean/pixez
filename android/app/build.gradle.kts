@@ -18,7 +18,6 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -71,17 +70,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
-
     defaultConfig {
         applicationId = packageName
         minSdk = flutter.minSdkVersion
         targetSdk = 35
-        versionCode = 10009900
-        versionName = "0.9.90 ttl"
+        versionCode = 10010010
+        versionName = "0.9.101 mode"
         ndk {
             abiFilters.addAll(arrayOf("armeabi-v7a", "arm64-v8a", "x86_64"))
         }
@@ -96,8 +90,8 @@ android {
         }
     }
 
-    signingConfigs {
-        if (keystorePropertiesFile.exists()) {
+    if (keystorePropertiesFile.exists()) {
+        signingConfigs {
             create("release") {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
@@ -108,13 +102,17 @@ android {
     }
 
     buildTypes {
-        getByName("release") {
-            if (keystorePropertiesFile.exists()) {
+        if (keystorePropertiesFile.exists()) {
+            getByName("release") {
                 signingConfig = signingConfigs.getByName("release")
-            } else {
-                signingConfig = signingConfigs.getByName("debug")
             }
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
