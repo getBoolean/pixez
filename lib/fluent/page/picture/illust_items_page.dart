@@ -257,7 +257,7 @@ abstract class IllustItemsPageState extends State<IllustItemsPage>
           if (data.type == "manga") {
             url = data.managaDetailUrl;
           }
-          Widget placeWidget = Container(height: height);
+
           return LayoutBuilder(
             builder: (context, constraints) => IllustItem(
               0,
@@ -269,14 +269,15 @@ abstract class IllustItemsPageState extends State<IllustItemsPage>
                   url,
                   fade: false,
                   width: constraints.maxWidth,
+                  height: height,
                   placeWidget: (url != data.imageUrls.medium)
                       ? PixivImage(
                           data.imageUrls.medium,
-                          width: constraints.maxWidth,
-                          placeWidget: placeWidget,
                           fade: false,
+                          width: constraints.maxWidth,
+                          height: height,
                         )
-                      : placeWidget,
+                      : null,
                 ),
               ),
               onMultiSavePressed: () async {
@@ -767,13 +768,13 @@ abstract class IllustItemsPageState extends State<IllustItemsPage>
     } else {
       tags = null;
     }
-    illustStore.star(
+    bool success = await illustStore.star(
       restrict: userSetting.defaultPrivateLike ? "private" : "public",
       tags: tags,
     );
-    if (userSetting.followAfterStar) {
-      bool success = await illustStore.followAfterStar();
-      if (success) {
+    if (success && userSetting.followAfterStar) {
+      bool followSuccess = await illustStore.followAfterStar();
+      if (followSuccess) {
         userStore?.isFollow = true;
         BotToast.showText(
           text:

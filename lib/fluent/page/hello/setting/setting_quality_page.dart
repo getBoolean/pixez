@@ -21,7 +21,9 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' show Icons;
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:pixez/fluent/component/pixez_button.dart';
+import 'package:pixez/constants.dart';
 import 'package:pixez/er/leader.dart';
+import 'package:pixez/er/updater.dart';
 import 'package:pixez/i18n.dart';
 import 'package:pixez/main.dart';
 import 'package:pixez/page/about/languages.dart';
@@ -106,13 +108,14 @@ class _SettingQualityPageState extends State<SettingQualityPage>
           ListTile(
             leading: const Icon(FluentIcons.info),
             title: Text(I18n.of(context).share_info_format),
-            trailing: const Icon(FluentIcons.chevron_right),
-            onPressed: () => Leader.push(
-              context,
-              CopyTextPage(),
-              icon: Icon(FluentIcons.info),
-              title: Text(I18n.of(context).share_info_format),
-            ),
+            trailing: const Icon(WindowsIcons.open_in_new_window),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => CopyTextPage(),
+                useRootNavigator: false,
+              );
+            },
           ),
           ListTile(
             leading: const Icon(FluentIcons.translate),
@@ -417,6 +420,30 @@ class _SettingQualityPageState extends State<SettingQualityPage>
               },
             ),
           ),
+          if (!Constants.isGooglePlay && !Platform.isIOS)
+            ListTile(
+              title: Text(I18n.of(context).ignore_current_version_update),
+              trailing: ToggleSwitch(
+                checked: Updater.result == Result.yes &&
+                    Updater.latestVersion != null &&
+                    userSetting.ignoreUpdateVersion == Updater.latestVersion,
+                onChanged: (value) async {
+                  if (value) {
+                    if (Updater.latestVersion == null) {
+                      await Updater.check();
+                    }
+                    if (Updater.result == Result.yes &&
+                        Updater.latestVersion != null) {
+                      await userSetting.setIgnoreUpdateVersion(
+                        Updater.latestVersion,
+                      );
+                    }
+                  } else {
+                    await userSetting.setIgnoreUpdateVersion(null);
+                  }
+                },
+              ),
+            ),
           Divider(),
           ListTile(
             title: Text(I18n.of(context).follow_after_star),
