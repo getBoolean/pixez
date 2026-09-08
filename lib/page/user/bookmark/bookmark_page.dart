@@ -18,7 +18,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:pixez/component/illust_card.dart';
 import 'package:pixez/component/pixez_default_header.dart';
@@ -360,7 +360,9 @@ class _BookMarkNestedPageState extends State<BookMarkNestedPage> {
 
   SliverWaterfallFlowDelegate _buildGridDelegate() {
     var count = 2;
-    if (userSetting.crossAdapt) {
+    if (MediaQuery.of(context).orientation == Orientation.portrait
+        ? userSetting.crossAdapt
+        : userSetting.hCrossAdapt) {
       count = _buildSliderValue();
     } else {
       count = (MediaQuery.of(context).orientation == Orientation.portrait)
