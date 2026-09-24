@@ -18,6 +18,7 @@ import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+import 'package:pixez/component/html_bio_formatter.dart';
 import 'package:pixez/component/picker/utils.dart';
 import 'package:pixez/er/leader.dart';
 import 'package:pixez/er/lprinter.dart';

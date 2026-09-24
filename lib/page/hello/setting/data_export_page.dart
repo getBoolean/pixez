@@ -57,7 +57,7 @@ class DataExportPage extends HookConsumerWidget {
           context,
           I18n.of(context).search_history,
           Icons.search,
-          () async {
+          (tileContext) async {
             try {
               await tagHistoryStore.exportData(tileContext);
             } catch (e) {
@@ -78,7 +78,7 @@ class DataExportPage extends HookConsumerWidget {
           context,
           I18n.of(context).bookmark_tag,
           Icons.star_outline,
-          () async {
+          (tileContext) async {
             try {
               await bookTagStore.exportData(tileContext);
             } catch (e) {
@@ -99,7 +99,7 @@ class DataExportPage extends HookConsumerWidget {
           context,
           I18n.of(context).illust_history,
           Icons.photo_library_outlined,
-          () async {
+          (tileContext) async {
             try {
               await ref.read(historyProvider.notifier).fetch();
               await ref.read(historyProvider.notifier).exportData(tileContext);
@@ -122,7 +122,7 @@ class DataExportPage extends HookConsumerWidget {
           context,
           I18n.of(context).novel_history,
           Icons.menu_book_outlined,
-          () async {
+          (tileContext) async {
             try {
               await novelHistoryStore.fetch();
               await novelHistoryStore.exportData(tileContext);
@@ -145,7 +145,7 @@ class DataExportPage extends HookConsumerWidget {
           context,
           I18n.of(context).mute_data,
           Icons.block,
-          () async {
+          (tileContext) async {
             try {
               await muteStore.export(tileContext);
             } catch (e) {
@@ -164,55 +164,7 @@ class DataExportPage extends HookConsumerWidget {
       ],
     );
   }
-}
 
-typedef _ExportAction = Future<void> Function(BuildContext context);
-
-class _ExportListTile extends StatelessWidget {
-  const _ExportListTile({
-    required this.title,
-    required this.onTap,
-    this.subtitle,
-  });
-
-  final Widget title;
-  final Widget? subtitle;
-  final _ExportAction onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Builder(
-      builder: (tileContext) => ListTile(
-        title: title,
-        subtitle: subtitle,
-        onTap: () async => onTap(tileContext),
-      ),
-    );
-  }
-}
-
-class _ActionListTile extends StatelessWidget {
-  const _ActionListTile({
-    required this.title,
-    required this.onTap,
-    this.subtitle,
-  });
-
-  final Widget title;
-  final Widget? subtitle;
-  final Future<void> Function() onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: title,
-      subtitle: subtitle,
-      onTap: () async => onTap(),
-    );
-  }
-}
-
-extension on DataExportPage {
   Future _showClearCacheDialog(BuildContext context) async {
     final result = await showDialog(
       builder: (BuildContext context) {
@@ -261,7 +213,7 @@ extension on DataExportPage {
     BuildContext context,
     String title,
     IconData icon,
-    Function() onExport,
+    Future<void> Function(BuildContext tileContext) onExport,
     Function() onImport,
   ) {
     return ListTile(
@@ -274,7 +226,14 @@ extension on DataExportPage {
             child: Text(I18n.of(context).import_title),
             onPressed: onImport,
           ),
-          TextButton(child: Text(I18n.of(context).export), onPressed: onExport),
+          // Use the button's own context so the share sheet anchors to it on
+          // tablets.
+          Builder(
+            builder: (tileContext) => TextButton(
+              child: Text(I18n.of(context).export),
+              onPressed: () => onExport(tileContext),
+            ),
+          ),
         ],
       ),
     );
