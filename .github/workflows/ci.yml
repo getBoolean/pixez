@@ -9,7 +9,7 @@ on:
       - "v*"
 
 env:
-  # Flutter version is read from .fvmrc (synced from upstream) in each job.
+  # FLUTTER_VERSION is resolved from pubspec.lock (synced from upstream) in each job.
   FLUTTER_CHANNEL: "stable"
   FLUTTER_VERSION: "any"
   BRANCH_NAME: $(echo -n ${{ github.head_ref || github.ref_name }} | tr "/" "-")
@@ -30,19 +30,16 @@ jobs:
           echo "BRANCH_NAME=${{ env.BRANCH_NAME }}" >> $GITHUB_ENV
           echo "BRANCH_NAME=${{ env.BRANCH_NAME }}"
 
-      - name: Resolve Flutter version from .fvmrc
+      - name: Resolve Flutter version from pubspec.lock
         run: |
-          fvm_flutter=$(jq -r '.flutter // "stable"' .fvmrc 2>/dev/null || echo stable)
-          case "$fvm_flutter" in
-            stable|beta|master|main)
-              echo "FLUTTER_CHANNEL=$fvm_flutter" >> $GITHUB_ENV
-              echo "FLUTTER_VERSION=any" >> $GITHUB_ENV
-              ;;
-            *)
-              echo "FLUTTER_VERSION=$fvm_flutter" >> $GITHUB_ENV
-              ;;
-          esac
-          echo "Using Flutter from .fvmrc: $fvm_flutter"
+          # Use the minimum Flutter version the resolved dependencies require.
+          flutter_version=$(sed -n '/^sdks:/,$ s/^  flutter: *"*>=\([0-9][0-9.]*\).*/\1/p' pubspec.lock)
+          if [ -z "$flutter_version" ]; then
+            echo "::error::Could not read the Flutter SDK constraint from pubspec.lock"
+            exit 1
+          fi
+          echo "FLUTTER_VERSION=$flutter_version" >> $GITHUB_ENV
+          echo "Using Flutter $flutter_version from pubspec.lock"
 
       - name: Install and Setup Flutter version
         uses: subosito/flutter-action@v2
@@ -167,19 +164,16 @@ jobs:
           java --version
           which java
 
-      - name: Resolve Flutter version from .fvmrc
+      - name: Resolve Flutter version from pubspec.lock
         run: |
-          fvm_flutter=$(jq -r '.flutter // "stable"' .fvmrc 2>/dev/null || echo stable)
-          case "$fvm_flutter" in
-            stable|beta|master|main)
-              echo "FLUTTER_CHANNEL=$fvm_flutter" >> $GITHUB_ENV
-              echo "FLUTTER_VERSION=any" >> $GITHUB_ENV
-              ;;
-            *)
-              echo "FLUTTER_VERSION=$fvm_flutter" >> $GITHUB_ENV
-              ;;
-          esac
-          echo "Using Flutter from .fvmrc: $fvm_flutter"
+          # Use the minimum Flutter version the resolved dependencies require.
+          flutter_version=$(sed -n '/^sdks:/,$ s/^  flutter: *"*>=\([0-9][0-9.]*\).*/\1/p' pubspec.lock)
+          if [ -z "$flutter_version" ]; then
+            echo "::error::Could not read the Flutter SDK constraint from pubspec.lock"
+            exit 1
+          fi
+          echo "FLUTTER_VERSION=$flutter_version" >> $GITHUB_ENV
+          echo "Using Flutter $flutter_version from pubspec.lock"
 
       - name: Install and set Flutter version
         uses: subosito/flutter-action@v2
