@@ -220,10 +220,59 @@ class ApiClient {
   }
 
   Future<Response> getUser(int id) async {
-    return httpClient.get(
-      "/v1/user/detail?filter=for_android",
-      queryParameters: {"user_id": id},
+    final webClient = Dio(
+      BaseOptions(
+        baseUrl: 'https://www.pixiv.net',
+        headers: {
+          'User-Agent': httpClient.options.headers['User-Agent'],
+          HttpHeaders.acceptLanguageHeader: Accept_Language,
+          HttpHeaders.refererHeader: 'https://www.pixiv.net/users/$id',
+          HttpHeaders.hostHeader: 'www.pixiv.net',
+        },
+      ),
     );
+    final responses = await Future.wait([
+      webClient.get('/ajax/user/$id', queryParameters: {
+        'full': 1,
+      }),
+      httpClient.get("/v1/user/detail?filter=for_android",
+          queryParameters: {"user_id": id}),
+    ]);
+    final ajaxRes = responses[0];
+    final appRes = responses[1];
+    final rawData = ajaxRes.data;
+    if (rawData is! Map<String, dynamic>) {
+      throw DioException(
+        requestOptions: ajaxRes.requestOptions,
+        response: ajaxRes,
+        error: 'Unexpected ajax user response type',
+      );
+    }
+    if (rawData['error'] == true || rawData['body'] is! Map<String, dynamic>) {
+      throw DioException(
+        requestOptions: ajaxRes.requestOptions,
+        response: ajaxRes,
+        error: rawData['message'] ?? 'Pixiv ajax user response error',
+      );
+    }
+    final mapped = mapAjaxUserDetailToAppApiShape(
+      (rawData['body'] as Map<String, dynamic>),
+    );
+    // Keep AJAX as primary profile source, but merge authenticated follow state
+    // from App API so follow button status remains accurate.
+    final appData = appRes.data;
+    if (appData is Map<String, dynamic>) {
+      final appUser = appData['user'];
+      final mappedUser = mapped['user'];
+      if (appUser is Map<String, dynamic> && mappedUser is Map<String, dynamic>) {
+        mappedUser['is_followed'] = appUser['is_followed'];
+        if (appUser.containsKey('is_mypixiv')) {
+          mappedUser['is_mypixiv'] = appUser['is_mypixiv'];
+        }
+      }
+    }
+    ajaxRes.data = mapped;
+    return ajaxRes;
   }
 
   Future<Response> postUser(int? a, String? b) async {
