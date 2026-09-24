@@ -20,7 +20,7 @@ permissions:
 jobs:
   build_ios_without_signing:
     name: Build Flutter for iOS (Without Signing)
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
