@@ -9,8 +9,9 @@ on:
       - "v*"
 
 env:
+  # Flutter version is read from .fvmrc (synced from upstream) in each job.
   FLUTTER_CHANNEL: "stable"
-  FLUTTER_VERSION: "3.47.0"
+  FLUTTER_VERSION: "any"
   BRANCH_NAME: $(echo -n ${{ github.head_ref || github.ref_name }} | tr "/" "-")
 
 permissions:
@@ -28,6 +29,20 @@ jobs:
         run: |
           echo "BRANCH_NAME=${{ env.BRANCH_NAME }}" >> $GITHUB_ENV
           echo "BRANCH_NAME=${{ env.BRANCH_NAME }}"
+
+      - name: Resolve Flutter version from .fvmrc
+        run: |
+          fvm_flutter=$(jq -r '.flutter // "stable"' .fvmrc 2>/dev/null || echo stable)
+          case "$fvm_flutter" in
+            stable|beta|master|main)
+              echo "FLUTTER_CHANNEL=$fvm_flutter" >> $GITHUB_ENV
+              echo "FLUTTER_VERSION=any" >> $GITHUB_ENV
+              ;;
+            *)
+              echo "FLUTTER_VERSION=$fvm_flutter" >> $GITHUB_ENV
+              ;;
+          esac
+          echo "Using Flutter from .fvmrc: $fvm_flutter"
 
       - name: Install and Setup Flutter version
         uses: subosito/flutter-action@v2
@@ -151,6 +166,20 @@ jobs:
         run: |
           java --version
           which java
+
+      - name: Resolve Flutter version from .fvmrc
+        run: |
+          fvm_flutter=$(jq -r '.flutter // "stable"' .fvmrc 2>/dev/null || echo stable)
+          case "$fvm_flutter" in
+            stable|beta|master|main)
+              echo "FLUTTER_CHANNEL=$fvm_flutter" >> $GITHUB_ENV
+              echo "FLUTTER_VERSION=any" >> $GITHUB_ENV
+              ;;
+            *)
+              echo "FLUTTER_VERSION=$fvm_flutter" >> $GITHUB_ENV
+              ;;
+          esac
+          echo "Using Flutter from .fvmrc: $fvm_flutter"
 
       - name: Install and set Flutter version
         uses: subosito/flutter-action@v2
