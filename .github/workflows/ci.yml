@@ -9,9 +9,14 @@ on:
       - "v*"
 
 env:
+  # FLUTTER_VERSION is resolved from pubspec.lock (synced from upstream) in each job.
   FLUTTER_CHANNEL: "stable"
-  FLUTTER_VERSION: "3.38.9"
+  FLUTTER_VERSION: "any"
   BRANCH_NAME: $(echo -n ${{ github.head_ref || github.ref_name }} | tr "/" "-")
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -19,7 +24,7 @@ permissions:
 jobs:
   build_ios_without_signing:
     name: Build Flutter for iOS (Without Signing)
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -28,6 +33,18 @@ jobs:
         run: |
           echo "BRANCH_NAME=${{ env.BRANCH_NAME }}" >> $GITHUB_ENV
           echo "BRANCH_NAME=${{ env.BRANCH_NAME }}"
+
+      - name: Resolve Flutter version from pubspec.lock
+        run: |
+          # Use the latest patch of the minimum Flutter release the resolved
+          # dependencies require (e.g. ">=3.44.0" -> "3.44.x").
+          flutter_version=$(sed -n '/^sdks:/,$ s/^  flutter: *"*>=\([0-9]*\.[0-9]*\).*/\1.x/p' pubspec.lock)
+          if [ -z "$flutter_version" ]; then
+            echo "::error::Could not read the Flutter SDK constraint from pubspec.lock"
+            exit 1
+          fi
+          echo "FLUTTER_VERSION=$flutter_version" >> $GITHUB_ENV
+          echo "Using Flutter $flutter_version from pubspec.lock"
 
       - name: Install and Setup Flutter version
         uses: subosito/flutter-action@v2
@@ -43,6 +60,14 @@ jobs:
 
       - name: Get Packages
         run: flutter pub get
+
+      - name: Get rhttp Packages
+        working-directory: plugins/rhttp/rhttp
+        run: flutter pub get
+
+      - name: Generate rhttp Code
+        working-directory: plugins/rhttp/rhttp
+        run: dart run build_runner build
 
       - name: Generate Code
         run: dart run build_runner build --delete-conflicting-outputs
@@ -152,6 +177,18 @@ jobs:
           java --version
           which java
 
+      - name: Resolve Flutter version from pubspec.lock
+        run: |
+          # Use the latest patch of the minimum Flutter release the resolved
+          # dependencies require (e.g. ">=3.44.0" -> "3.44.x").
+          flutter_version=$(sed -n '/^sdks:/,$ s/^  flutter: *"*>=\([0-9]*\.[0-9]*\).*/\1.x/p' pubspec.lock)
+          if [ -z "$flutter_version" ]; then
+            echo "::error::Could not read the Flutter SDK constraint from pubspec.lock"
+            exit 1
+          fi
+          echo "FLUTTER_VERSION=$flutter_version" >> $GITHUB_ENV
+          echo "Using Flutter $flutter_version from pubspec.lock"
+
       - name: Install and set Flutter version
         uses: subosito/flutter-action@v2
         with:
@@ -166,6 +203,14 @@ jobs:
 
       - name: Get Packages
         run: flutter pub get
+
+      - name: Get rhttp Packages
+        working-directory: plugins/rhttp/rhttp
+        run: flutter pub get
+
+      - name: Generate rhttp Code
+        working-directory: plugins/rhttp/rhttp
+        run: dart run build_runner build
 
       - name: Generate Code
         run: flutter pub run build_runner build --delete-conflicting-outputs

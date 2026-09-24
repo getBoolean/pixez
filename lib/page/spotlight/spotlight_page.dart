@@ -17,7 +17,7 @@
 import 'dart:math';
 
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:pixez/component/pixez_default_header.dart';
 import 'package:pixez/component/spotlight_card.dart';
@@ -68,7 +68,9 @@ class SpotLightPage extends StatelessWidget {
 
   SliverWaterfallFlowDelegate _buildGridDelegate(BuildContext context) {
     var count = 2;
-    if (userSetting.crossAdapt) {
+    if (MediaQuery.of(context).orientation == Orientation.portrait
+        ? userSetting.crossAdapt
+        : userSetting.hCrossAdapt) {
       count = _buildSliderValue(context);
     } else {
       count = (MediaQuery.of(context).orientation == Orientation.portrait)
