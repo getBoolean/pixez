@@ -117,9 +117,11 @@ android {
             applicationIdSuffix = ".debug"
         }
 
-        if (keystorePropertiesFile.exists()) {
-            getByName("release") {
+        getByName("release") {
+            if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
+            } else {
+                signingConfig = signingConfigs.getByName("debug")
             }
         }
     }

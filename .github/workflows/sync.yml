@@ -50,7 +50,7 @@ jobs:
         id: check_branch
         run: |
           output=$(git ls-remote --heads origin refs/heads/sync_upstream | wc -l)
-          if [output = "1"]; then
+          if [ "$output" = "1" ]; then
             echo "sync_upstream branch exists"
           else
             echo "sync_upstream branch does not exist"
@@ -77,7 +77,21 @@ jobs:
             target_tag=$(git for-each-ref --sort=-creatordate --format='%(refname:short)' refs/tags/upstream | head -n 1)
           fi
           echo "Merging tag: $target_tag"
-          git merge --allow-unrelated-histories -X theirs "$target_tag"
+          # Never auto-resolve conflicts in upstream's favour: that silently
+          # discards fork changes. Stop and report the conflicts instead.
+          if ! git merge --no-edit "$target_tag"; then
+            conflicts=$(git diff --name-only --diff-filter=U)
+            git merge --abort
+            {
+              echo "## Merge conflict syncing $target_tag"
+              echo
+              echo "Upstream conflicts with fork changes in these files. Merge the tag into \`sync_upstream\` manually and resolve them:"
+              echo
+              echo "$conflicts" | sed 's/^/- `/; s/$/`/'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::Merge of $target_tag has conflicts in: $(echo $conflicts)"
+            exit 1
+          fi
         shell: bash
       - name: Push changes
         uses: ad-m/github-push-action@master
