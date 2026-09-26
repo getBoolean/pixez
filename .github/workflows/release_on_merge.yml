@@ -1,7 +1,8 @@
-name: Release on upstream sync
+name: Release on merge
 run-name: "Tag release for ${{ github.event.pull_request.title || 'manual run' }}"
 
-# When a sync_upstream PR is merged into main, push a v<upstream>+<n> tag.
+# When any PR is merged into main (including the daily sync_upstream PR),
+# push a v<upstream>+<n> tag.
 # The tag push runs ci.yml, which builds the APK, AAB and IPA and publishes
 # them (plus AltStore metadata) as a GitHub release.
 
@@ -15,7 +16,7 @@ env:
   upstream_repo: https://github.com/Notsfsssf/pixez-flutter.git
 
 concurrency:
-  group: release-on-sync
+  group: release-on-merge
   cancel-in-progress: false
 
 jobs:
@@ -23,9 +24,7 @@ jobs:
     name: Tag release
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.pull_request.merged == true &&
-       github.event.pull_request.head.ref == 'sync_upstream' &&
-       github.event.pull_request.head.repo.full_name == github.repository)
+      github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
