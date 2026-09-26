@@ -1,0 +1,96 @@
+name: Release on upstream sync
+run-name: "Tag release for ${{ github.event.pull_request.title || 'manual run' }}"
+
+# When a sync_upstream PR is merged into main, push a v<upstream>+<n> tag.
+# The tag push runs ci.yml, which builds the APK, AAB and IPA and publishes
+# them (plus AltStore metadata) as a GitHub release.
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  upstream_repo: https://github.com/Notsfsssf/pixez-flutter.git
+
+concurrency:
+  group: release-on-sync
+  cancel-in-progress: false
+
+jobs:
+  tag_release:
+    name: Tag release
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       github.event.pull_request.head.ref == 'sync_upstream' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          # A tag pushed with GITHUB_TOKEN would not trigger ci.yml.
+          token: ${{ secrets.PAT }}
+
+      - name: Find upstream version
+        id: upstream
+        run: |
+          git fetch --no-tags "${{ env.upstream_repo }}" "refs/tags/*:refs/tags/upstream/*"
+          # Newest upstream tag that has been merged into main.
+          upstream_tag=$(git tag --merged HEAD --sort=-creatordate --list 'upstream/*' | head -n 1)
+          if [ -z "$upstream_tag" ]; then
+            echo "::error::No upstream tag is merged into main"
+            exit 1
+          fi
+          echo "tag=$upstream_tag" >> "$GITHUB_OUTPUT"
+          echo "version=${upstream_tag#upstream/}" >> "$GITHUB_OUTPUT"
+          echo "Upstream version: ${upstream_tag#upstream/}"
+
+      - name: Create and push release tag
+        env:
+          UPSTREAM_TAG: ${{ steps.upstream.outputs.tag }}
+          UPSTREAM_VERSION: ${{ steps.upstream.outputs.version }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ secrets.PAT }}
+        run: |
+          if [ -n "$(git tag --points-at HEAD --list 'v*')" ]; then
+            echo "main is already tagged: $(git tag --points-at HEAD --list 'v*')"
+            exit 0
+          fi
+
+          # Next build number for this upstream version: v<upstream>+<n>.
+          last=$(git tag --list "v${UPSTREAM_VERSION}+*" | sed "s/^v${UPSTREAM_VERSION}+//" | grep -E '^[0-9]+$' | sort -n | tail -n 1)
+          release_tag="v${UPSTREAM_VERSION}+$(( ${last:-0} + 1 ))"
+          previous_tag=$(git describe --tags --abbrev=0 --match 'v*' HEAD 2>/dev/null || true)
+
+          notes_file="$RUNNER_TEMP/notes.md"
+          {
+            echo "Synced with upstream [${UPSTREAM_VERSION}](https://github.com/Notsfsssf/pixez-flutter/releases/tag/${UPSTREAM_VERSION})."
+            if [ -n "$PR_NUMBER" ]; then
+              echo
+              echo "Merged in #${PR_NUMBER}."
+            fi
+            if [ -n "$previous_tag" ]; then
+              fork_changes=$(git log --no-merges --format='- %s' "${previous_tag}..HEAD" "^${UPSTREAM_TAG}")
+              if [ -n "$fork_changes" ]; then
+                echo
+                echo "Fork changes since ${previous_tag}:"
+                echo "$fork_changes"
+              fi
+            fi
+          } > "$notes_file"
+          cat "$notes_file"
+
+          git config user.name "Sync Upstream Action"
+          git config user.email "19920697+sync-upstream-action@users.noreply.github.com"
+          git tag -a "$release_tag" -F "$notes_file" HEAD
+          git push origin "refs/tags/$release_tag"
+
+          # Create the release with notes now; ci.yml then uploads the
+          # binaries to it (allowUpdates keeps this body).
+          gh release create "$release_tag" --verify-tag --title "$release_tag" --notes-file "$notes_file"
+          echo "Published $release_tag; ci.yml will attach the binaries." >> "$GITHUB_STEP_SUMMARY"
