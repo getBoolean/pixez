@@ -104,7 +104,10 @@ jobs:
         id: release_notes
         if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
         run: |
-          notes="$(git tag -l --format='%(contents)' "${{ github.ref_name }}")"
+          # actions/checkout stores the tag without its annotation; fetch the
+          # real tag object so the notes come from it, not the commit message.
+          git fetch --depth=1 --force origin "+refs/tags/${GITHUB_REF_NAME}:refs/tags/${GITHUB_REF_NAME}"
+          notes="$(git tag -l --format='%(contents)' "${GITHUB_REF_NAME}")"
           delimiter="$(openssl rand -hex 8)"
           {
             echo "text<<${delimiter}"
@@ -133,6 +136,7 @@ jobs:
           app_plist="build/ios/iphoneos/Runner.app/Info.plist"
           version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app_plist")"
           build_version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app_plist")"
+          min_os_version="$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$app_plist")"
           version_date="$(date -u +"%Y-%m-%dT%H:%M:%S")"
           size="$(stat -f%z "$ipa_path")"
           notes="$RELEASE_NOTES"
@@ -147,7 +151,7 @@ jobs:
           jq --arg date "$version_date" '.apps[0].versions[0].date = $date' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
           jq --arg ver "$version" '.apps[0].versions[0].version = $ver' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
           jq --arg build "$build_version" '.apps[0].versions[0].buildVersion = $build' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
-          jq --arg min "13.0" '.apps[0].versions[0].minOSVersion = $min' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
+          jq --arg min "$min_os_version" '.apps[0].versions[0].minOSVersion = $min' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
           jq --arg url "$download_url" '.apps[0].versions[0].downloadURL = $url' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
           jq --arg icon "$icon_url" '.iconURL = $icon | .apps[0].iconURL = $icon' "$altstore_file" > /tmp/altstore_tmp.json && mv /tmp/altstore_tmp.json "$altstore_file"
 
